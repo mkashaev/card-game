@@ -17,17 +17,18 @@ export default class Card extends Phaser.GameObjects.Sprite {
     this.isOpened = false;
   }
 
-  flip(texture: string): void {
+  flip(): void {
     this.scene.tweens.add({
       targets: this,
       scaleX: 0,
       ease: "Linear",
       duration: OPEN_SPEED,
-      onComplete: () => this.show(texture),
+      onComplete: () => this.show(),
     });
   }
 
-  show(texture: string): void {
+  show(): void {
+    const texture: string = this.isOpened ? "card" + this.value : "card";
     this.setTexture(texture);
     this.scene.tweens.add({
       targets: this,
@@ -39,12 +40,14 @@ export default class Card extends Phaser.GameObjects.Sprite {
 
   open(): void {
     this.isOpened = true;
-    this.flip("card" + this.value);
+    this.flip();
   }
 
   close(): void {
-    this.setTexture("card");
-    this.isOpened = false;
-    this.flip("card");
+    if (this.isOpened) {
+      this.setTexture("card");
+      this.isOpened = false;
+      this.flip();
+    }
   }
 }

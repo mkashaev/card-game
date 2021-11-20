@@ -12,6 +12,7 @@ export default class MainScene extends Phaser.Scene {
   private cards: Card[] = [];
   private openedCard: Card | null = null;
   private openedPairs = 0;
+  public timeoutText: unknown;
 
   constructor() {
     super("main");
@@ -29,8 +30,15 @@ export default class MainScene extends Phaser.Scene {
 
   create(): void {
     this.createBackground();
+    this.createText();
     this.createCards();
     this.start();
+  }
+
+  createText(): void {
+    this.timeoutText = this.add.text(8, 340, "Time: 10", {
+      font: "32px Arial",
+    });
   }
 
   start(): void {
