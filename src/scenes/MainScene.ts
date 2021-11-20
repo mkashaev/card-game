@@ -7,7 +7,8 @@ import Card from "./Card";
 const ROWS = 2;
 const COLS = 5;
 const CARDS = [1, 2, 3, 4, 5];
-const TIMEOUT = 10;
+const TIMEOUT = 3;
+const VOLUME = 0.1;
 
 export default class MainScene extends Phaser.Scene {
   private cards: Card[] = [];
@@ -15,6 +16,7 @@ export default class MainScene extends Phaser.Scene {
   private openedPairs = 0;
   public timeoutText: Phaser.GameObjects.Text;
   public timeout = TIMEOUT;
+  public sounds: Record<string, Phaser.Sound.BaseSound>;
 
   constructor() {
     super("main");
@@ -28,14 +30,33 @@ export default class MainScene extends Phaser.Scene {
     this.load.image("card3", "assets/card3.png");
     this.load.image("card4", "assets/card4.png");
     this.load.image("card5", "assets/card5.png");
+
+    this.load.audio("theme", "assets/sounds/theme.mp3");
+    this.load.audio("card", "assets/sounds/card.mp3");
+    this.load.audio("complete", "assets/sounds/complete.mp3");
+    this.load.audio("success", "assets/sounds/success.mp3");
+    this.load.audio("timeout", "assets/sounds/timeout.mp3");
   }
 
   create(): void {
     this.createTimer();
+    this.createSounds();
     this.createBackground();
     this.createText();
     this.createCards();
     this.start();
+  }
+
+  createSounds(): void {
+    this.sounds = {
+      theme: this.sound.add("theme"),
+      card: this.sound.add("card"),
+      complete: this.sound.add("complete"),
+      success: this.sound.add("success"),
+      timeout: this.sound.add("timeout"),
+    };
+
+    this.sounds.theme.play({ volume: 0.05 });
   }
 
   createTimer(): void {
@@ -51,6 +72,7 @@ export default class MainScene extends Phaser.Scene {
     this.timeoutText.setText("Time: " + this.timeout);
 
     if (this.timeout <= 0) {
+      this.sounds.timeout.play({ volume: VOLUME });
       this.start();
     } else {
       --this.timeout;
@@ -99,11 +121,14 @@ export default class MainScene extends Phaser.Scene {
       return;
     }
 
+    this.sounds.card.play({ volume: VOLUME });
+
     if (this.openedCard) {
       if (this.openedCard.value === card.value) {
         // Картинки одинаковые, запомнить
         this.openedCard = null;
         this.openedPairs++;
+        this.sounds.success.play({ volume: VOLUME });
       } else {
         // Картинки разные, закрыть
         this.openedCard.close();
@@ -115,6 +140,7 @@ export default class MainScene extends Phaser.Scene {
     card.open();
 
     if (this.openedPairs === this.cards.length / 2) {
+      this.sounds.complete.play({ volume: VOLUME });
       this.start();
     }
   }
