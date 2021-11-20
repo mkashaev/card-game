@@ -30,7 +30,6 @@ export default class MainScene extends Phaser.Scene {
   create(): void {
     this.createBackground();
     this.createCards();
-    // this.openedCard = null;
     this.start();
   }
 
