@@ -7,7 +7,7 @@ import Card from "./Card";
 const ROWS = 2;
 const COLS = 5;
 const CARDS = [1, 2, 3, 4, 5];
-const TIMEOUT = 3;
+const TIMEOUT = 60; // Seconds
 const VOLUME = 0.1;
 
 export default class MainScene extends Phaser.Scene {
@@ -17,6 +17,7 @@ export default class MainScene extends Phaser.Scene {
   public timeoutText: Phaser.GameObjects.Text;
   public timeout = TIMEOUT;
   public sounds: Record<string, Phaser.Sound.BaseSound>;
+  public positions: IPosition[];
 
   constructor() {
     super("main");
@@ -47,6 +48,15 @@ export default class MainScene extends Phaser.Scene {
     this.start();
   }
 
+  createTimer(): void {
+    this.time.addEvent({
+      delay: 1000,
+      callback: this.onTimerTick,
+      callbackScope: this,
+      loop: true,
+    });
+  }
+
   createSounds(): void {
     this.sounds = {
       theme: this.sound.add("theme"),
@@ -59,51 +69,14 @@ export default class MainScene extends Phaser.Scene {
     this.sounds.theme.play({ volume: 0.05 });
   }
 
-  createTimer(): void {
-    this.time.addEvent({
-      delay: 1000,
-      callback: this.onTimerTick,
-      callbackScope: this,
-      loop: true,
-    });
-  }
-
-  onTimerTick(): void {
-    this.timeoutText.setText("Time: " + this.timeout);
-
-    if (this.timeout <= 0) {
-      this.sounds.timeout.play({ volume: VOLUME });
-      this.start();
-    } else {
-      --this.timeout;
-    }
+  createBackground(): void {
+    this.add.sprite(0, 0, "bg").setOrigin(0, 0);
   }
 
   createText(): void {
     this.timeoutText = this.add.text(8, 340, `Time: ${this.timeout}`, {
       font: "32px Arial",
     });
-  }
-
-  start(): void {
-    this.timeout = TIMEOUT;
-    this.openedCard = null;
-    this.openedPairs = 0;
-    this.initCards();
-  }
-
-  initCards(): void {
-    const positions = this.getCardsPositions();
-
-    this.cards.forEach((card) => {
-      const position = positions.pop();
-      card.close();
-      card.setPosition(position?.x, position?.y);
-    });
-  }
-
-  createBackground(): void {
-    this.add.sprite(0, 0, "bg").setOrigin(0, 0);
   }
 
   createCards(): void {
@@ -114,6 +87,77 @@ export default class MainScene extends Phaser.Scene {
     }
 
     this.input.on("gameobjectdown", this.onCardClicked, this);
+  }
+
+  onTimerTick(): void {
+    this.timeoutText.setText("Time: " + this.timeout);
+
+    if (this.timeout <= 0) {
+      this.time.paused = true;
+      this.sounds.timeout.play({ volume: VOLUME });
+      this.restart();
+    } else {
+      --this.timeout;
+    }
+  }
+
+  start(): void {
+    // this.timeout = TIMEOUT;
+    // this.openedCard = null;
+    // this.openedPairs = 0;
+    // this.initCards();
+    this.initCardsPositions();
+    this.timeout = TIMEOUT;
+    this.openedCard = null;
+    this.openedPairs = 0;
+    this.time.paused = false;
+    this.initCards();
+    this.showCards();
+  }
+
+  showCards(): void {
+    this.cards.forEach((card: Card) => {
+      console.log({ p: card.position });
+    });
+
+    this.cards.forEach((card: Card) => {
+      // console.log({ d: card.position.delay });
+      card.depth = card.position.delay || 100;
+      card.move({
+        x: card.position.x,
+        y: card.position.y,
+        delay: card.position.delay || 100,
+      });
+    });
+  }
+
+  restart(): void {
+    let count = 0;
+    const onCardMoveComplete = () => {
+      ++count;
+      if (count >= this.cards.length) {
+        this.start();
+      }
+    };
+
+    this.cards.forEach((card: Card) => {
+      // card.depth = 1 / card.position.delay / 100;
+      card.move({
+        x: +this.sys.game.config.width + card.width,
+        y: +this.sys.game.config.height + card.height,
+        delay: card.position.delay || 100,
+        callback: onCardMoveComplete,
+      });
+    });
+  }
+
+  initCards(): void {
+    // const positions = this.getCardsPositions();
+    const positions = Phaser.Utils.Array.Shuffle(this.positions);
+
+    this.cards.forEach((card) => {
+      card.init(positions.pop());
+    });
   }
 
   onCardClicked(pointer: unknown, card: Card): void {
@@ -137,15 +181,16 @@ export default class MainScene extends Phaser.Scene {
     } else {
       this.openedCard = card;
     }
-    card.open();
 
-    if (this.openedPairs === this.cards.length / 2) {
-      this.sounds.complete.play({ volume: VOLUME });
-      this.start();
-    }
+    card.open(() => {
+      if (this.openedPairs === this.cards.length / 2) {
+        this.sounds.complete.play({ volume: VOLUME });
+        this.start();
+      }
+    });
   }
 
-  getCardsPositions(): IPosition[] {
+  initCardsPositions(): void {
     const cardTexture = this.textures.get("card").getSourceImage();
     const cardWidth = cardTexture.width + 4;
     const cardHeight = cardTexture.height + 4;
@@ -158,15 +203,19 @@ export default class MainScene extends Phaser.Scene {
       ((this.sys.game.config.height as number) - cardHeight * ROWS) / 2 +
       cardHeight / 2;
 
+    let id = 0;
     for (let row = 0; row < ROWS; row++) {
       for (let col = 0; col < COLS; col++) {
+        ++id;
         positions.push({
           x: col * cardWidth + offSetX,
           y: row * cardHeight + offSetY,
+          delay: id * 100,
         });
       }
     }
 
-    return Phaser.Utils.Array.Shuffle(positions);
+    // return Phaser.Utils.Array.Shuffle(positions);
+    this.positions = positions;
   }
 }

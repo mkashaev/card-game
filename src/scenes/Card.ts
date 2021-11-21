@@ -1,11 +1,20 @@
 import Phaser from "phaser";
+import { IPosition } from "../types/position.interface";
 // this.sys.game.config
 
 const OPEN_SPEED = 100; // milliseconds
 
+interface IMoveArgs {
+  x: string | number;
+  y: string | number;
+  delay: number;
+  callback?: () => void;
+}
+
 export default class Card extends Phaser.GameObjects.Sprite {
   public value: number;
   public isOpened: boolean;
+  public position: IPosition;
 
   constructor(scene: Phaser.Scene, value: number) {
     super(scene, 0, 0, "card");
@@ -17,17 +26,23 @@ export default class Card extends Phaser.GameObjects.Sprite {
     this.isOpened = false;
   }
 
-  flip(): void {
+  init(position?: IPosition): void {
+    this.position = position || { x: 0, y: 0, delay: 0 };
+    this.close();
+    this.setPosition(-this.width, -this.height);
+  }
+
+  flip(callback?: () => void): void {
     this.scene.tweens.add({
       targets: this,
       scaleX: 0,
       ease: "Linear",
       duration: OPEN_SPEED,
-      onComplete: () => this.show(),
+      onComplete: () => this.show(callback),
     });
   }
 
-  show(): void {
+  show(callback?: () => void): void {
     const texture: string = this.isOpened ? "card" + this.value : "card";
     this.setTexture(texture);
     this.scene.tweens.add({
@@ -35,19 +50,36 @@ export default class Card extends Phaser.GameObjects.Sprite {
       scaleX: 1,
       ease: "Linear",
       duration: OPEN_SPEED,
+      onComplete: () => {
+        callback && callback();
+      },
     });
   }
 
-  open(): void {
-    this.isOpened = true;
-    this.flip();
+  move(params: IMoveArgs): void {
+    this.scene.tweens.add({
+      targets: this,
+      x: params.x,
+      y: params.y,
+      delay: params.delay,
+      ease: "Linear",
+      duration: 250,
+      onComplete: () => {
+        params.callback && params.callback();
+      },
+    });
   }
 
-  close(): void {
+  open(callback: () => void): void {
+    this.isOpened = true;
+    this.flip(callback);
+  }
+
+  close(callback?: () => void): void {
     if (this.isOpened) {
       this.setTexture("card");
       this.isOpened = false;
-      this.flip();
+      this.flip(callback);
     }
   }
 }
