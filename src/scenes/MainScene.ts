@@ -102,10 +102,6 @@ export default class MainScene extends Phaser.Scene {
   }
 
   start(): void {
-    // this.timeout = TIMEOUT;
-    // this.openedCard = null;
-    // this.openedPairs = 0;
-    // this.initCards();
     this.initCardsPositions();
     this.timeout = TIMEOUT;
     this.openedCard = null;
@@ -147,7 +143,6 @@ export default class MainScene extends Phaser.Scene {
   }
 
   initCards(): void {
-    // const positions = this.getCardsPositions();
     const positions = Phaser.Utils.Array.Shuffle(this.positions);
 
     this.cards.forEach((card) => {
@@ -210,7 +205,6 @@ export default class MainScene extends Phaser.Scene {
       }
     }
 
-    // return Phaser.Utils.Array.Shuffle(positions);
     this.positions = positions;
   }
 }
