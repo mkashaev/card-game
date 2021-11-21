@@ -117,11 +117,6 @@ export default class MainScene extends Phaser.Scene {
 
   showCards(): void {
     this.cards.forEach((card: Card) => {
-      console.log({ p: card.position });
-    });
-
-    this.cards.forEach((card: Card) => {
-      // console.log({ d: card.position.delay });
       card.depth = card.position.delay || 100;
       card.move({
         x: card.position.x,
