@@ -1,10 +1,3 @@
-
-![A modern Phaser 3 template: Phaser 3 + TypeScript + Snowpack + ESLint](https://i.imgur.com/Rq3JrQX.png)
-
-A modern Phaser 3 template: Develop your game using Typescript, keep your codebase clean with ESLint, and enjoy lightning-fast live updates thanks to Snowpack.
-
----
-
 **Table of contents**
 - [Dependencies](#dependencies)
 - [Quick start](#quick-start)
@@ -14,7 +7,6 @@ A modern Phaser 3 template: Develop your game using Typescript, keep your codeba
   - [Build optimization](#build-optimization)
 - [ESLint](#eslint)
 - [NPM Scripts](#npm-scripts)
-  - [Happy coding!](#happy-coding)
 
 
 # Dependencies
@@ -43,9 +35,7 @@ npm install
 npm start
 ```
 
-Go to your browser and navigate to http://localhost:8000. You should see this beauty:
-
-![Acho the pup bouncing around](https://i.imgur.com/bYVcrSr.gif)
+Go to your browser and navigate to http://localhost:8000.
 
 If you wish to publish your project somewhere, create the production build using the following command:
 
@@ -57,15 +47,15 @@ npm run build
 
 ```
 ├───public/                         Public static files
-│   ├───assets/                     Sample assets
-│   │   ├───banner.png
-│   │   ├───acho.png
-│   │   └───ground.png
+│   ├───assets/
+│   │   ├───assets/
+│   │   │   ├───sounds.mp3
+│   │   └───imgaes.png
 │   └───index.html                  HTML file where our game will be loaded
 ├───src/                            Game logic goes here
 │   ├───scenes/                     Game scenes
-│   │   ├───InitialScene.ts         Initial sample scene
-│   │   └───PreloaderScene.ts       Scene preloader
+│   │   ├───Card.ts                 Card component
+│   │   └───MainScene.ts            Main scene
 │   └───Main.ts                     Phaser game configuration
 ├───.eslintignore                   Files that should be ignored by ESLint	
 ├───.eslintrc.js                    ESLint configuration file
@@ -140,7 +130,3 @@ A brief description of the scripts you'll find in the `package.json`:
 - **build**: Generates the production build in a `_build` folder located in the project's root.
 - **lint**: Runs the linter and prints any issues found
 - **lint:fix**: Runs the linter and executes automatic fixes. It'll also print any issues that couldn't be solved.
-
-
-<!-- no toc -->
-## Happy coding! 
